@@ -1,0 +1,13 @@
+organization_id     = "organizations/123456789012"
+billing_account_id  = "ABCDEF-123456-ABCDEF"
+prefix              = "my-org"
+location            = "EU"
+
+organization_admins = [
+  "user:admin@example.com",
+  "group:gcp-admins@example.com"
+]
+
+security_admins = [
+  "group:security-team@example.com"
+]

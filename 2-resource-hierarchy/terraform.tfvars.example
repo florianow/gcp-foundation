@@ -1,0 +1,17 @@
+organization_id    = "organizations/123456789012"
+billing_account_id = "ABCDEF-123456-ABCDEF"
+prefix             = "my-org"
+location           = "EU"
+
+folder_viewers = [
+  "group:platform-viewers@example.com"
+]
+
+logging_admins = [
+  "group:logging-admins@example.com",
+  "group:security-team@example.com"
+]
+
+self_managed_lz_admins = [
+  "group:platform-admins@example.com"
+]

@@ -1,0 +1,21 @@
+organization_id                = "organizations/123456789012"
+audit_logs_project_id          = "my-org-audit-logs"
+prefix                         = "my-org"
+location                       = "EU"
+
+allowed_policy_member_domains = [
+  "C0xxxxxxx",
+  "example.com"
+]
+
+organization_viewers = [
+  "group:org-viewers@example.com"
+]
+
+security_admins = [
+  "group:security-team@example.com"
+]
+
+security_admin_group     = "security-admins@example.com"
+security_contact_email   = "security@example.com"
+technical_contact_email  = "platform-team@example.com"

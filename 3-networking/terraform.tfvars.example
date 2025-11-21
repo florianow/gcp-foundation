@@ -1,0 +1,13 @@
+billing_account_id   = "ABCDEF-123456-ABCDEF"
+management_folder_id = "folders/123456789012"
+prefix               = "my-org"
+
+network_admins = [
+  "group:network-admins@example.com"
+]
+
+network_viewers = [
+  "group:platform-viewers@example.com"
+]
+
+dns_domain = "internal.example.com"

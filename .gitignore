@@ -1,0 +1,63 @@
+# Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform variable files (may contain sensitive data)
+*.tfvars
+!*.tfvars.example
+
+# Terraform directories
+.terraform/
+.terraform.lock.hcl
+
+# Backend configuration (contains bucket names)
+backend.tf
+!backend.tf.example
+
+# Provider configuration (may contain project IDs)
+provider.tf
+!provider.tf.example
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Environment variable files
+.env
+.env.local
+
+# GCP credentials (NEVER commit these)
+*-key.json
+credentials.json
+service-account-key.json
+application_default_credentials.json
+
+# Output files
+*-outputs.json
+bootstrap-outputs.json
+hierarchy-outputs.json
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
