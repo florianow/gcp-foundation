@@ -69,7 +69,7 @@ module "organization" {
   }
 
   org_policy_custom_constraints = {
-    "custom.disableDefaultSA" = {
+    "custom.disableDefaultServiceAccount" = {
       resource_types = ["compute.googleapis.com/Instance"]
       method_types   = ["CREATE"]
       condition      = "resource.serviceAccounts.exists(sa, sa.email.endsWith('-compute@developer.gserviceaccount.com'))"

@@ -88,7 +88,7 @@ gcloud auth application-default login
 # If in Cloud Shell, upload the gcp-foundation-fabric folder
 # Or clone if you have it in a git repo
 
-cd gcp-foundation-fabric/0-bootstrap
+cd 0-bootstrap
 ```
 
 ### 6. Configure Bootstrap Stage
@@ -196,10 +196,29 @@ sed -i.bak '/^[[:space:]]*"iam.allowedPolicyMemberDomains"/,/^[[:space:]]*# }$/s
 # Alternative: Manual edit
 # Edit main.tf and comment out lines 10-18 (the entire iam.allowedPolicyMemberDomains block)
 
+# REQUIRED: Create provider.tf to set quota project for APIs
+cat > provider.tf <<EOF
+provider "google" {
+  billing_project       = "${PREFIX}-automation"
+  user_project_override = true
+}
+
+provider "google-beta" {
+  billing_project       = "${PREFIX}-automation"
+  user_project_override = true
+}
+EOF
+
+# REQUIRED: Enable APIs in automation project
+gcloud services enable logging.googleapis.com essentialcontacts.googleapis.com orgpolicy.googleapis.com --project=${PREFIX}-automation
+
+# REQUIRED: Set quota project for Application Default Credentials
+gcloud auth application-default set-quota-project ${PREFIX}-automation
+
 # Initialize and import existing policy
 terraform init
 
-# Import pre-existing storage.uniformBucketLevelAccess policy
+# Import pre-existing storage.uniformBucketLevelAccess policy (if it exists)
 terraform import 'module.organization.google_org_policy_policy.default["storage.uniformBucketLevelAccess"]' ${ORG_NAME}/policies/storage.uniformBucketLevelAccess
 
 # Apply
@@ -674,6 +693,25 @@ EOF
 # Edit main.tf and comment out lines 10-18 (the entire iam.allowedPolicyMemberDomains block)
 # Or use sed (macOS):
 # sed -i.bak '10,18s/^/# /' main.tf
+
+# REQUIRED: Create provider.tf to set quota project for APIs
+cat > provider.tf <<EOF
+provider "google" {
+  billing_project       = "${AUTOMATION_PROJECT}"
+  user_project_override = true
+}
+
+provider "google-beta" {
+  billing_project       = "${AUTOMATION_PROJECT}"
+  user_project_override = true
+}
+EOF
+
+# REQUIRED: Enable APIs in automation project
+gcloud services enable logging.googleapis.com essentialcontacts.googleapis.com orgpolicy.googleapis.com --project=${AUTOMATION_PROJECT}
+
+# REQUIRED: Set quota project for Application Default Credentials
+gcloud auth application-default set-quota-project ${AUTOMATION_PROJECT}
 
 # Initialize and import existing policy
 terraform init

@@ -76,9 +76,6 @@ module "standard_lz_folder" {
     "roles/viewer" = var.folder_viewers
   }
 
-  # tag_bindings = {
-  #   compliance = var.gdpr_compliance_tag_value
-  # }
 }
 
 module "self_managed_lz_folder" {
@@ -112,9 +109,6 @@ module "self_managed_lz_folder" {
     "roles/resourcemanager.folderEditor" = var.self_managed_lz_admins
   }
 
-  # tag_bindings = {
-  #   compliance = var.gdpr_compliance_tag_value
-  # }
 }
 
 module "dev_folder" {
