@@ -26,22 +26,10 @@ variable "folder_viewers" {
   default     = []
 }
 
-variable "logging_admins" {
-  description = "List of identities with logging admin role"
-  type        = list(string)
-  default     = []
-}
-
 variable "self_managed_lz_admins" {
   description = "List of identities with admin access to self-managed landing zone"
   type        = list(string)
   default     = []
-}
-
-variable "logging_bucket_url" {
-  description = "URL of the centralized logging bucket (will be created by this module)"
-  type        = string
-  default     = ""
 }
 
 variable "gdpr_compliance_tag_value" {

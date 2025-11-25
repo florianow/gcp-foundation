@@ -32,28 +32,3 @@ output "prod_folder_id" {
   description = "Production environment folder ID"
   value       = module.prod_folder.id
 }
-
-output "logging_project_id" {
-  description = "Centralized logging project ID"
-  value       = module.logging_project.project_id
-}
-
-output "logging_bucket_name" {
-  description = "Centralized logging bucket name"
-  value       = module.logging_bucket.name
-}
-
-output "logging_bucket_url" {
-  description = "Centralized logging bucket URL for sink configuration"
-  value       = "storage.googleapis.com/${module.logging_bucket.name}"
-}
-
-output "standard_lz_sink_writer_identity" {
-  description = "Service account for standard landing zone logging sink"
-  value       = module.standard_lz_folder.sink_writer_identities
-}
-
-output "self_managed_lz_sink_writer_identity" {
-  description = "Service account for self-managed landing zone logging sink"
-  value       = module.self_managed_lz_folder.sink_writer_identities
-}

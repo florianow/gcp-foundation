@@ -103,9 +103,27 @@ module "organization" {
   }
 }
 
+module "audit_logs_project" {
+  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/project?ref=v34.1.0"
+  
+  billing_account = var.billing_account_id
+  name            = "${var.prefix}-audit-logs"
+  parent          = var.organization_id
+  prefix          = null
+
+  services = [
+    "logging.googleapis.com",
+    "storage.googleapis.com",
+  ]
+
+  iam = {
+    "roles/viewer" = var.security_admins
+  }
+}
+
 module "audit_logs_bucket" {
   source        = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/gcs?ref=v34.1.0"
-  project_id    = var.audit_logs_project_id
+  project_id    = module.audit_logs_project.project_id
   name          = "${var.prefix}-org-audit-logs"
   location      = var.location
   storage_class = "STANDARD"

@@ -64,14 +64,6 @@ module "standard_lz_folder" {
     }
   }
 
-  logging_sinks = {
-    standard-lz-logs = {
-      destination = module.logging_bucket.name
-      type        = "storage"
-      filter      = "resource.type != \"k8s_cluster\""
-    }
-  }
-
   iam = {
     "roles/viewer" = var.folder_viewers
   }
@@ -93,14 +85,6 @@ module "self_managed_lz_folder" {
           }
         }
       ]
-    }
-  }
-
-  logging_sinks = {
-    self-managed-lz-logs = {
-      destination = module.logging_bucket.name
-      type        = "storage"
-      filter      = "resource.type != \"k8s_cluster\""
     }
   }
 
@@ -141,65 +125,5 @@ module "prod_folder" {
 
   iam = {
     "roles/viewer" = var.folder_viewers
-  }
-}
-
-module "logging_project" {
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/project?ref=v34.1.0"
-  
-  billing_account = var.billing_account_id
-  parent          = module.management_folder.id
-  name            = "${var.prefix}-centralized-logging"
-  prefix          = null
-
-  services = [
-    "logging.googleapis.com",
-    "storage.googleapis.com",
-    "monitoring.googleapis.com",
-  ]
-
-  iam = {
-    "roles/logging.admin" = var.logging_admins
-    "roles/viewer"        = var.folder_viewers
-  }
-}
-
-module "logging_bucket" {
-  source        = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/gcs?ref=v34.1.0"
-  project_id    = module.logging_project.project_id
-  name          = "${var.prefix}-centralized-logs"
-  location      = var.location
-  storage_class = "STANDARD"
-
-  versioning    = true
-  force_destroy = false
-
-  retention_policy = {
-    retention_period = 2592000
-    is_locked        = false
-  }
-
-  lifecycle_rules = {
-    archival = {
-      action = {
-        type          = "SetStorageClass"
-        storage_class = "ARCHIVE"
-      }
-      condition = {
-        age = 90
-      }
-    }
-    deletion = {
-      action = {
-        type = "Delete"
-      }
-      condition = {
-        age = 2555
-      }
-    }
-  }
-
-  iam = {
-    "roles/storage.objectViewer" = var.logging_admins
   }
 }

@@ -3,8 +3,8 @@ variable "organization_id" {
   type        = string
 }
 
-variable "audit_logs_project_id" {
-  description = "Project ID where audit logs bucket is located"
+variable "billing_account_id" {
+  description = "Billing account ID for projects"
   type        = string
 }
 

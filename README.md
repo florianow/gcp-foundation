@@ -51,7 +51,7 @@ Hierarchical folder structure organizing your cloud resources:
 
 **Logging & Monitoring**:
 - ✅ Organization-wide audit logging
-- ✅ 7-year log retention (30 days hot, 90 days archive)
+- ✅ 1-year audit log retention (30 days hot, 365 days archive)
 - ✅ Essential contacts for security notifications
 
 ### 🌐 **Networking Foundation** (Optional)
@@ -76,12 +76,12 @@ Production-ready Terraform setup:
 
 | Stage | Purpose | Resources Created | Approx. Time |
 |-------|---------|-------------------|--------------|
-| **Stage 0: Bootstrap** | Automation infrastructure | Automation project, audit logs project, state bucket, service accounts | 2-3 min |
-| **Stage 1: Organization** | Security policies | 13 org policies, 1 custom constraint, org logging sink, essential contacts | 1-2 min |
-| **Stage 2: Hierarchy** | Landing zones & folders | Root folder, 2 landing zones, 3 environment folders, centralized logging project, logging sinks | 3-5 min |
+| **Stage 0: Bootstrap** | Automation infrastructure | Automation project, state bucket, service accounts | 2-3 min |
+| **Stage 1: Organization** | Security policies & audit logging | Audit logs project + bucket, 13 org policies, 1 custom constraint, org logging sink, essential contacts | 2-3 min |
+| **Stage 2: Hierarchy** | Landing zones & folders | Root folder, 2 landing zones, 3 environment folders (management, dev, staging, prod) | 1-2 min |
 | **Stage 3: Networking** | Network foundation (optional) | Networking project, Shared VPC, subnets, Cloud NAT, firewall rules, DNS zones | 5-10 min |
 
-**Total deployment time**: 10-20 minutes (stages 0-2) or 15-30 minutes (all stages)
+**Total deployment time**: 10-15 minutes (stages 0-2) or 15-25 minutes (all stages)
 
 ## Architecture
 
@@ -91,15 +91,16 @@ The foundation creates a hierarchical structure within your GCP organization:
 Organization (your-org-id)
 │
 ├── Projects (created by bootstrap)
-│   ├── {prefix}-automation          # Terraform state & service accounts
-│   └── {prefix}-audit-logs          # Organization audit logs
+│   └── {prefix}-automation          # Terraform state & service accounts
+│
+├── Projects (created by organization)
+│   └── {prefix}-audit-logs          # Organization audit logs project
+│       └── {prefix}-org-audit-logs (GCS bucket)
 │
 └── Folders (created by hierarchy)
     └── {prefix}-landing-zones/
         │
         ├── management/
-        │   ├── {prefix}-centralized-logging (project)
-        │   └── {prefix}-centralized-logs (GCS bucket)
         │   └── {prefix}-networking (project) [if Stage 3]
         │
         ├── standard-landing-zone/ [RESTRICTED - Production]
@@ -237,19 +238,16 @@ Each stage:
 
 ### Centralized Logging Architecture
 
-**Organization Level**:
-- Cloud Logging bucket: 30-day retention in Cloud Logging
-- All organization audit logs captured
-- Sink configured automatically
+**Organization Level** (Stage 1):
+- Project: `{prefix}-audit-logs`
+- GCS bucket: `{prefix}-org-audit-logs`
+- Purpose: Organization-wide audit logs (security & compliance)
+- Retention: 30 days hot, 365 days archive
+- Auto-configured logging sink
+- Access: Security admins only
 
-**Landing Zone Level**:
-- Dedicated GCS bucket per landing zone
-- **Lifecycle management**:
-  - Day 1-30: STANDARD storage class (hot access)
-  - Day 31-90: ARCHIVE storage class (compliance retention)
-  - Day 2557+: Auto-deletion (7-year retention complete)
-- **Filters**: Excludes k8s_cluster logs (too verbose, stored separately)
-- **Compliance**: Meets most regulatory requirements (GDPR, SOC2, HIPAA)
+**Application/Workload Logging**:
+Teams create their own logging infrastructure in their projects as needed. The foundation does not impose centralized application logging.
 
 ## Getting Started
 
@@ -281,7 +279,6 @@ terraform output
 **Important Outputs:**
 - `terraform_state_bucket` - Use this in backend.tf for other stages
 - `automation_service_account_email` - Service account for automation
-- `audit_logs_project_id` - Project for centralized audit logs
 
 ### Step 1: Organization Policies
 
@@ -297,7 +294,7 @@ vim terraform.tfvars
 
 # Set required values:
 # - organization_id (same as step 0)
-# - audit_logs_project_id (from step 0 output)
+# - billing_account_id (same as step 0)
 # - allowed_policy_member_domains (your organization's domain)
 # - security_contact_email
 # - technical_contact_email
@@ -369,16 +366,17 @@ Applied to **Standard Landing Zone** only:
 
 ### Centralized Logging
 
-**Organization-level:**
-- Cloud Logging bucket (30-day retention)
-- All audit logs captured
+**Organization-level audit logs** (Stage 1):
+- Project: `{prefix}-audit-logs`
+- GCS bucket for audit log storage
+- 30-day hot retention, 365-day archive
+- All organization audit logs captured
+- Security admin access only
 
-**Landing Zone level:**
-- GCS bucket for each LZ
-- 30-day hot storage
-- 90-day archive to ARCHIVE class
-- 7-year total retention
-- Auto-deletion after retention
+**Application/workload logs**:
+- Teams manage their own logging infrastructure
+- No centralized application logging imposed by foundation
+- Teams can create logging sinks as needed in their projects
 
 ### Networking Security Baseline
 
@@ -498,7 +496,7 @@ module "meshstack" {
 7. ✅ **Cloud NAT** - No public IPs on VMs
 8. ✅ **Private Google Access** - VPC endpoints
 9. ✅ **Essential contacts** - Security notifications
-10. ✅ **Logging retention** - 7 years for compliance
+10. ✅ **Audit log retention** - 1 year for compliance
 
 ### Nice-to-Have (Not Included, Add Later)
 - CI/CD integration (Cloud Build, GitHub Actions)
@@ -533,13 +531,6 @@ module "custom_lz_folder" {
   
   org_policies = {
     # Your policies here
-  }
-  
-  logging_sinks = {
-    custom-lz-logs = {
-      destination = var.logging_bucket_url
-      type        = "storage"
-    }
   }
 }
 ```

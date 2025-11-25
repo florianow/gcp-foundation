@@ -166,8 +166,7 @@ terraform {
 }
 EOF
 
-# Get audit logs project ID from bootstrap
-export AUDIT_PROJECT=$(cd ../0-bootstrap && terraform output -raw audit_logs_project_id)
+# Set variables
 export ADMIN_EMAIL="your-admin@example.com"  # Change this to your email
 export PREFIX="my-org"  # Change this to your prefix
 
@@ -177,8 +176,6 @@ organization_id    = "${ORG_NAME}"
 billing_account_id = "${BILLING_ACCOUNT}"
 prefix             = "${PREFIX}"
 location           = "EU"
-
-audit_logs_project_id = "${AUDIT_PROJECT}"
 
 organization_viewers = ["user:${ADMIN_EMAIL}"]
 security_admins      = ["user:${ADMIN_EMAIL}"]
@@ -261,17 +258,9 @@ billing_account_id = "${BILLING_ACCOUNT}"
 prefix             = "${PREFIX}"
 location           = "EU"
 
-logging_admins = ["user:${ADMIN_EMAIL}"]
+folder_viewers = ["user:${ADMIN_EMAIL}"]
 self_managed_lz_admins = ["user:${ADMIN_EMAIL}"]
 EOF
-
-# REQUIRED CODE FIXES: Comment out tag_bindings and fix logging sink destinations
-# Fix 1: Comment out tag_bindings (lines 79-82 and 115-118)
-sed -i.bak '/^[[:space:]]*# tag_bindings = {/,/^[[:space:]]*# }$/d' main.tf
-
-# Fix 2: Fix logging sink destination format (change from full URL to just bucket name)
-# This should already be correct if using the fixed code, but verify lines 69 and 104 use:
-# destination = module.logging_bucket.name
 
 # Set environment variables (CRITICAL)
 export GOOGLE_CLOUD_QUOTA_PROJECT="${PREFIX}-automation"
@@ -540,28 +529,12 @@ gcloud services enable cloudbilling.googleapis.com --project=YOUR_PREFIX-automat
 #### Issue 4: Tag bindings without tags configured
 **Error**: Tags referenced but not created
 
-**Fix**: Comment out tag_bindings in `2-resource-hierarchy/main.tf`:
-```hcl
-# Lines 79-82 and 115-118: Comment out these blocks
-# tag_bindings = {
-#   compliance = var.gdpr_compliance_tag_value
-# }
-```
+**Fix**: This has been removed from the code. No action needed.
 
 #### Issue 5: Logging sink destination format incorrect
 **Error**: `Bucket storage.googleapis.com does not exist`
 
-**Fix**: Use just the bucket name in `2-resource-hierarchy/main.tf`:
-```hcl
-# Lines 67-72 and 102-107: Change destination format
-logging_sinks = {
-  standard-lz-logs = {
-    destination = module.logging_bucket.name  # NOT "storage.googleapis.com/..."
-    type        = "storage"
-    filter      = "resource.type != \"k8s_cluster\""
-  }
-}
-```
+**Fix**: This has been removed from the code. Stage 2 no longer creates logging sinks. Teams manage their own logging.
 
 ### Environment Setup
 
@@ -608,7 +581,7 @@ billing_account_id = "ABCDEF-123456-ABCDEF"
 prefix             = "my-org"
 location           = "EU"
 
-logging_admins = ["user:admin@example.com"]
+folder_viewers = ["user:admin@example.com"]
 self_managed_lz_admins = ["user:admin@example.com"]
 ```
 
@@ -756,16 +729,9 @@ billing_account_id = "${BILLING_ACCOUNT}"
 prefix             = "${PREFIX}"
 location           = "EU"
 
-logging_admins = ["user:${ADMIN_EMAIL}"]
+folder_viewers = ["user:${ADMIN_EMAIL}"]
 self_managed_lz_admins = ["user:${ADMIN_EMAIL}"]
 EOF
-
-# REQUIRED: Edit main.tf to fix tag_bindings and logging sinks
-# 1. Comment out lines 79-82 (tag_bindings in standard_lz_folder)
-# 2. Comment out lines 115-118 (tag_bindings in self_managed_lz_folder)
-# 3. Verify line 69 has: destination = module.logging_bucket.name
-# 4. Verify line 104 has: destination = module.logging_bucket.name
-#    (NOT "storage.googleapis.com/${module.logging_bucket.name}")
 
 # Set environment (CRITICAL)
 export GOOGLE_CLOUD_QUOTA_PROJECT="${AUTOMATION_PROJECT}"
@@ -793,19 +759,16 @@ terraform apply
 - Audit logs bucket: `my-org-org-audit-logs`
 - Organization logging sink
 
-### Stage 2 (36 resources)
+### Stage 2 (Resource Hierarchy)
+
 - Root folder: `my-org-landing-zones`
 - Management folder: `management`
-  - Project: `my-org-centralized-logging`
-  - Bucket: `my-org-centralized-logs`
 - Standard landing zone folder: `standard-landing-zone`
   - 6 org policies
   - 3 environment folders: dev, staging, prod
-  - Logging sink to centralized bucket
 - Self-managed landing zone folder: `self-managed-landing-zone`
   - 1 org policy
-  - Logging sink to centralized bucket
-- All IAM bindings for folders and projects
+- All IAM bindings for folders
 
 ## Next Steps
 
